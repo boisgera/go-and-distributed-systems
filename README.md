@@ -146,9 +146,87 @@ From browser
 
 ![](images/hello-world-html.png)
 
+```go
+func Handler(w http.ResponseWriter, r *http.Request) {
+	IPAddr := r.RemoteAddr
+	w.Write([]byte("Hello " + IPAddr + "!\n"))
+}
+```
 
+```bash
+$ curl localhost:8000
+Hello 127.0.0.1:48358
+```
 
+```go
+func GetIPAddr(r *http.Request) string {
+	IPAddrPort := r.RemoteAddr
+	if IPAddrPort == "" {
+		panic("IP address is undefined")
+	}
+	IPAddr := strings.Split(IPAddrPort, ":")[0]
+	return IPAddr
+}
 
+func Handler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
+}
+```
+
+```bash
+$ curl localhost:8000
+Hello 127.0.0.1:48358
+```
+
+```go
+func Handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "plain/html")
+	w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
+}
+
+func API(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+	json := fmt.Sprintf(`{"ip_address": "%s"}`, GetIPAddr(r)) + "\n"
+	w.Write([]byte(json))
+}
+
+func main() {
+	http.HandleFunc("/", Handler)
+	http.HandleFunc("/api", API)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+```bash
+$ curl localhost:8000
+Hello 127.0.0.1!
+$ curl localhost:8000\
+Hello 127.0.0.1!
+$ curl --head localhost:8000
+HTTP/1.1 200 OK
+Date: Thu, 22 Dec 2022 15:02:23 GMT
+Content-Length: 17
+Content-Type: text/plain; charset=utf-8
+
+```
+
+```bash
+$ curl localhost:8000\api
+{"ip_address": "127.0.0.1"}
+$ curl --head localhost:8000\api
+HTTP/1.1 200 OK
+Content-Type: application/json
+Date: Thu, 22 Dec 2022 15:03:37 GMT
+Content-Length: 28
+
+```
 
 
   2. Connect to it via curl, browser (and LATER, Python (requests) and Go)
