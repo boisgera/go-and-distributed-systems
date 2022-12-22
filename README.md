@@ -60,6 +60,9 @@ $ go run app.go
 ```
 
 Via a web browser
+
+![](images/hello-world-plain-text.png)
+
 ```
 $ go run app.go 
 2022-12-22 12:29:17.925020503 +0100 CET m=+239.495300807
@@ -127,9 +130,26 @@ $ curl 127.0.0.1:8000
 Hello world!
 ```
 
+```go
+func Handler(w http.ResponseWriter, r *http.Request) {
+	html := "<p>Hello <b>world!</b></p>\n"
+	w.Write([]byte(html))
+}
+```
+
+```bash
+$ curl 127.0.0.1:8000
+<p>Hello <b>world!</b></p>
+```
+
 From browser
 
-![](images/hello-world-plain-text.png)
+![](images/hello-world-html.png)
+
+
+
+
+
 
   2. Connect to it via curl, browser (and LATER, Python (requests) and Go)
 
