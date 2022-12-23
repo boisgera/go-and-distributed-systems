@@ -281,6 +281,99 @@ Hello 127.0.0.1!
 Hello 127.0.0.1!
 ```
 
+```
+// ⚠️ Unsafe code in a concurrent setting. 🐉 Beware the dragons!
+var ips []string = make([]string, 0)
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+    ip := GetIPAddr(r)
+    ips = append(ips, ip)
+    fmt.Printf(ips)
+    message := ""
+    for _, ip := range ips {
+        message += "Hello " + ip + "!\n"
+    }
+    w.Write([]byte(message))
+}
+```
+
+```bash
+$ go run app.go
+⏳
+```
+
+```bash
+$ curl localhost:8001
+Hello 127.0.0.1!
+$ curl localhost:8000
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+$ curl localhost:8000
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+$ curl localhost:8000
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+```
+
+```bash
+$ go run app.go
+[127.0.0.1]
+[127.0.0.1 127.0.0.1]
+[127.0.0.1 127.0.0.1 127.0.0.1]
+[127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1]
+⏳
+```
+
+`hammer.sh`
+
+```bash
+#!/bin/bash
+for i in {1..5}
+do
+    curl localhost:8001 &
+done
+```
+
+```go
+var ips []string = make([]string, 0)
+var ip_channel = make(chan string, 1000)
+
+func IPManager() {
+	for ip := range ip_channel {
+		ips = append(ips, ip)
+	}
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+	ip := GetIPAddr(r)
+	ip_channel <- ip
+	fmt.Println(len(ips))
+	message := ""
+	for _, ip := range ips {
+		message += "Hello " + ip + "!\n"
+	}
+	w.Write([]byte(message))
+}
+
+func main() {
+	go IPManager()
+	http.HandleFunc("/", Handler)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		panic(err)
+	}
+}
+```
+
+
 ### 🚧 TODO
 
   - More client options: Python (requests) and Go
