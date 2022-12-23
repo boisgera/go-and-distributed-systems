@@ -14,7 +14,39 @@ Go
 HTTP
 --------------------------------------------------------------------------------
 
-### Hello World
+```
+$ curl localhost:8000
+curl: (7) Failed to connect to localhost port 8000: Connection refused
+```
+
+With a web browser
+
+![](images/cant-be-reached.png)
+
+
+`app.go`
+
+```go
+package main
+
+import (
+    "net/http"
+)
+
+func main() {
+    http.ListenAndServe(":8000", nil)
+}
+```
+
+```bash
+$ curl localhost:8000
+404 page not found
+```
+
+With a web browser
+
+![](images/404.png)
+
 
 `app.go`
 ```go
