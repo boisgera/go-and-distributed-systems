@@ -21,18 +21,18 @@ HTTP
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"time"
+    "fmt"
+    "net/http"
+    "time"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(time.Now())
+    fmt.Println(time.Now())
 }
 
 func main() {
-	http.HandleFunc("/", Handler)
-	http.ListenAndServe(":8000", nil)
+    http.HandleFunc("/", Handler)
+    http.ListenAndServe(":8000", nil)
 }
 ```
 
@@ -72,11 +72,11 @@ $ go run app.go
 
 ```go
 func main() {
-	http.HandleFunc("/", Handler)
-	err := http.ListenAndServe(":8000", nil)
-	if err != nil {
-		panic(err)
-	}
+    http.HandleFunc("/", Handler)
+    err := http.ListenAndServe(":8000", nil)
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 
@@ -87,15 +87,15 @@ panic: listen tcp :8000: bind: address already in use
 
 ```go
 func main() {
-	http.HandleFunc("/", Handler)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
-	}
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		panic(err)
-	}
+    http.HandleFunc("/", Handler)
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8000"
+    }
+    err := http.ListenAndServe(":"+port, nil)
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 
@@ -117,7 +117,7 @@ $ PORT=8001 go run app.go
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello world!\n"))
+    w.Write([]byte("Hello world!\n"))
 }
 ```
 
@@ -133,8 +133,8 @@ With a web browser
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
-	html := "<p>Hello <b>world!</b></p>\n"
-	w.Write([]byte(html))
+    html := "<p>Hello <b>world!</b></p>\n"
+    w.Write([]byte(html))
 }
 ```
 
@@ -149,8 +149,8 @@ From browser
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
-	IPAddr := r.RemoteAddr
-	w.Write([]byte("Hello " + IPAddr + "!\n"))
+    IPAddr := r.RemoteAddr
+    w.Write([]byte("Hello " + IPAddr + "!\n"))
 }
 ```
 
@@ -161,16 +161,16 @@ Hello 127.0.0.1:48358
 
 ```go
 func GetIPAddr(r *http.Request) string {
-	IPAddrPort := r.RemoteAddr
-	if IPAddrPort == "" {
-		panic("IP address is undefined")
-	}
-	IPAddr := strings.Split(IPAddrPort, ":")[0]
-	return IPAddr
+    IPAddrPort := r.RemoteAddr
+    if IPAddrPort == "" {
+        panic("IP address is undefined")
+    }
+    IPAddr := strings.Split(IPAddrPort, ":")[0]
+    return IPAddr
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
+    w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
 }
 ```
 
@@ -181,27 +181,27 @@ Hello 127.0.0.1:48358
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "plain/html")
-	w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
+    w.Header().Add("Content-Type", "plain/html")
+    w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
 }
 
 func API(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "application/json")
-	json := fmt.Sprintf(`{"ip_address": "%s"}`, GetIPAddr(r)) + "\n"
-	w.Write([]byte(json))
+    w.Header().Add("Content-Type", "application/json")
+    json := fmt.Sprintf(`{"ip_address": "%s"}`, GetIPAddr(r)) + "\n"
+    w.Write([]byte(json))
 }
 
 func main() {
-	http.HandleFunc("/", Handler)
-	http.HandleFunc("/api", API)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8000"
-	}
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		panic(err)
-	}
+    http.HandleFunc("/", Handler)
+    http.HandleFunc("/api", API)
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8000"
+    }
+    err := http.ListenAndServe(":"+port, nil)
+    if err != nil {
+        panic(err)
+    }
 }
 ```
 
