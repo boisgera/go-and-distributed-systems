@@ -256,6 +256,29 @@ Content-Length: 28
 
 ### Concurrency
 
+The HTTP server handles the requests concurrently
+
+```go
+func Handler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "plain/html")
+	w.Write([]byte("Hello " + GetIPAddr(r) + "!\n"))
+	time.Sleep(10 * time.Second)
+}
+```
+
+```bash
+$ curl localhost:8000  # ⏳ Wait ~10 sec
+Hello 127.0.0.1!
+```
+
+```bash
+$ curl localhost:8000 & # Run in the background
+$ curl localhost:8000 &
+$ curl localhost:8000 &
+$ # ⏳ Wait ~10 sec
+Hello 127.0.0.1!
+Hello 127.0.0.1!
+Hello 127.0.0.1!
 
 ### 🚧 TODO
 
