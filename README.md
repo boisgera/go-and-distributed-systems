@@ -61,7 +61,7 @@ $ go run app.go
 
 Via a web browser
 
-![](images/hello-world-plain-text.png)
+![](images/ping.png)
 
 ```
 $ go run app.go 
@@ -79,10 +79,6 @@ func main() {
 	}
 }
 ```
-
-```go
-$ go run app.go
-``
 
 ```go
 $ go run app.go 
@@ -129,6 +125,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 $ curl 127.0.0.1:8000
 Hello world!
 ```
+
+With a web browser
+
+![](images/hello-world-plain-text.png)
+
 
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
