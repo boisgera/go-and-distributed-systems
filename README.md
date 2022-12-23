@@ -82,7 +82,7 @@ $ go run app.go
 ```
 
 ```bash
-$ curl 127.0.0.1:8000
+$ curl localhost:8000
 ```
 
 ```
@@ -136,7 +136,7 @@ $ PORT=8001 go run app.go
 ```
 
 ```
-$ curl 127.0.0.1:8001
+$ curl localhost:8001
 ```
 
 
@@ -154,7 +154,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 ```
 
 ```bash
-$ curl 127.0.0.1:8000
+$ curl localhost:8000
 Hello world!
 ```
 
@@ -171,7 +171,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 ```
 
 ```bash
-$ curl 127.0.0.1:8000
+$ curl localhost:8000
 <p>Hello <b>world!</b></p>
 ```
 
