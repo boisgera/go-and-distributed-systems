@@ -140,8 +140,6 @@ $ PORT=8001 go run app.go
 ⏳
 ```
 
-----
-
 ```go
 func Handler(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte("Hello world!\n"))
@@ -183,7 +181,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 ```bash
 $ curl localhost:8000
-Hello 127.0.0.1:48358
+Hello 127.0.0.1:48358!
 ```
 
 ```go
@@ -192,7 +190,7 @@ func GetIPAddr(r *http.Request) string {
     if IPAddrPort == "" {
         panic("IP address is undefined")
     }
-    IPAddr := strings.Split(IPAddrPort, ":")[0]
+    IPAddr := strings.Split(IPAddrPort, ":")[0] // 🪲: very brittle
     return IPAddr
 }
 
@@ -203,7 +201,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 ```bash
 $ curl localhost:8000
-Hello 127.0.0.1:48358
+Hello 127.0.0.1!
 ```
 
 ```go
@@ -246,9 +244,9 @@ Content-Type: text/plain; charset=utf-8
 ```
 
 ```bash
-$ curl localhost:8000\api
+$ curl localhost:8000/api
 {"ip_address": "127.0.0.1"}
-$ curl --head localhost:8000\api
+$ curl --head localhost:8000/api
 HTTP/1.1 200 OK
 Content-Type: application/json
 Date: Thu, 22 Dec 2022 15:03:37 GMT
@@ -256,39 +254,32 @@ Content-Length: 28
 
 ```
 
+### Concurrency
 
-  2. Connect to it via curl, browser (and LATER, Python (requests) and Go)
 
-  3. Return "Hello world" HTML instead of plain text
+### 🚧 TODO
 
-  4. Return "Hello world" + IP adress + date
+  - More client options: Python (requests) and Go
 
-  5. Do it in JSON
+  - More server options: FastAPI & Flask
 
-  6. Routing & Query Parameters
+  - Routing & Query Parameters
 
-     (Mention FastAPI & Flask alternative)
+  - mDNS ?
 
-  7. mDNS ?
+  - "Prod:" Compile, 80 as default port, deploy, etc.
 
-  8. Compile, 80 as default port, deploy, etc.
+  - Concurrency: implicit ("hammer"/"DOS" the server) and implicit.
 
-Q: How can I introduce concurrency fast here ? Implicitly with a slow request
-and show that the HTTP Server IS concurrent. But explicitly? Start a 
-long-running process that collects a log of the connections and give the list
-back? So that would be a 4.5 ; yes.
+  - Other protocols & associated go libs reference.
+    "Always bet on the web" mostly
 
-Moar
---------------------------------------------------------------------------------
+    - mDNS
 
-Concepts and Go libs
+    - mqtt
 
-  - mDNS
+    - sockets / websockets
 
-  - mqtt
-
-  - sockets / websockets
-
-  - webRTC
+    - webRTC
 
 
