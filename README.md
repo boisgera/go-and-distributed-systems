@@ -1,16 +1,6 @@
 Go and Distributed Systems
 ================================================================================
 
-Go
---------------------------------------------------------------------------------
-
-**TODO:**
-
-  - go tour reference
-
-  - selected examples (to make the following HTTP Section understandable
-    first and foremost)
-
 HTTP
 --------------------------------------------------------------------------------
 
