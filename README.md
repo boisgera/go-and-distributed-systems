@@ -4,9 +4,127 @@ Go and Distributed Systems
 HTTP Client
 --------------------------------------------------------------------------------
 
-### HTML
+### HTML Content
 
+![](images/example.org.png)
 
+```bash
+$ curl http://example.org
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+    body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        
+    }
+    div {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
+    }
+    a:link, a:visited {
+        color: #38488f;
+        text-decoration: none;
+    }
+    @media (max-width: 700px) {
+        div {
+            margin: 0 auto;
+            width: auto;
+        }
+    }
+    </style>    
+</head>
+
+<body>
+<div>
+    <h1>Example Domain</h1>
+    <p>This domain is for use in illustrative examples in documents. You may use this
+    domain in literature without prior coordination or asking for permission.</p>
+    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+</div>
+</body>
+</html>
+```
+
+`app.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func main() {
+	resp, _ := http.Get("http://example.org")
+	bytes, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(bytes))
+}
+```
+
+```bash
+$ go run app.go 
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+    body {
+        background-color: #f0f0f2;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        
+    }
+    div {
+        width: 600px;
+        margin: 5em auto;
+        padding: 2em;
+        background-color: #fdfdff;
+        border-radius: 0.5em;
+        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
+    }
+    a:link, a:visited {
+        color: #38488f;
+        text-decoration: none;
+    }
+    @media (max-width: 700px) {
+        div {
+            margin: 0 auto;
+            width: auto;
+        }
+    }
+    </style>    
+</head>
+
+<body>
+<div>
+    <h1>Example Domain</h1>
+    <p>This domain is for use in illustrative examples in documents. You may use this
+    domain in literature without prior coordination or asking for permission.</p>
+    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+</div>
+</body>
+</html>
+```
 
 ### JSON API
 
@@ -46,6 +164,7 @@ $ go run app.go
 "iss_position": {"longitude": "-13.8055", "latitude": "-37.7661"}}
 ```
 
+If you want to make an HTTP Request and you have some additional workload, be aware that these requests take some time.
 
 ```go
 import (
@@ -81,9 +200,7 @@ user    0m0,394s
 sys     0m0,125s
 ```
 
----
-
-## Start a GoRoutine
+So making the request in the background with a coroutine is sensible.
 
 ```go
 
@@ -104,6 +221,49 @@ $ time go run app.go
 real    0m1,318s
 user    0m0,400s
 sys     0m0,163s
+```
+
+The `encoding/json` Go package can be used to extract the relevant data from the JSON string.
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+type Position struct {
+	Latitude  string `json:"latitude"`
+	Longitude string `json:"longitude"`
+}
+
+type Wrapper struct {
+	TimeStamp   int      `json:"timestamp"`
+	ISSPosition Position `json:"iss_position"`
+	Message     string   `json:"message"`
+}
+
+func GetISSPosition() Position {
+	resp, _ := http.Get("http://api.open-notify.org/iss-now.json")
+	body := resp.Body
+	bytes, _ := io.ReadAll(body)
+	wrapper := Wrapper{}
+	json.Unmarshal([]byte(bytes), &wrapper)
+	return wrapper.ISSPosition
+}
+
+func main() {
+	pos := GetISSPosition()
+	fmt.Printf("latitude: %s, longitude: %s\n", pos.Latitude, pos.Longitude)
+}
+```
+
+```bash
+$ go run app.go 
+latitude: 23.7538, longitude: -142.2912
 ```
 
 HTTP Server
@@ -386,86 +546,23 @@ Hello 127.0.0.1!
 Hello 127.0.0.1!
 ```
 
-```
-// ⚠️ Unsafe code in a concurrent setting. 🐉 Beware the dragons!
-var ips []string = make([]string, 0)
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-    ip := GetIPAddr(r)
-    ips = append(ips, ip)
-    fmt.Printf(ips)
-    message := ""
-    for _, ip := range ips {
-        message += "Hello " + ip + "!\n"
-    }
-    w.Write([]byte(message))
-}
-```
-
-```bash
-$ go run app.go
-⏳
-```
-
-```bash
-$ curl localhost:8001
-Hello 127.0.0.1!
-$ curl localhost:8000
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-$ curl localhost:8000
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-$ curl localhost:8000
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-Hello 127.0.0.1!
-```
-
-```bash
-$ go run app.go
-[127.0.0.1]
-[127.0.0.1 127.0.0.1]
-[127.0.0.1 127.0.0.1 127.0.0.1]
-[127.0.0.1 127.0.0.1 127.0.0.1 127.0.0.1]
-⏳
-```
-
-`hammer.sh`
-
-```bash
-#!/bin/bash
-for i in {1..5}
-do
-    curl localhost:8001 &
-done
-```
+### Query & Parameters
 
 ```go
-var ips []string = make([]string, 0)
-var ip_channel = make(chan string, 1000)
+package main
 
-func IPManager() {
-	for ip := range ip_channel {
-		ips = append(ips, ip)
-	}
-}
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	ip := GetIPAddr(r)
-	ip_channel <- ip
-	fmt.Println(len(ips))
-	message := ""
-	for _, ip := range ips {
-		message += "Hello " + ip + "!\n"
-	}
-	w.Write([]byte(message))
+	name := r.URL.Query().Get("name")
+	fmt.Printf("Hello %s!\n", name)
 }
 
 func main() {
-	go IPManager()
 	http.HandleFunc("/", Handler)
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -478,27 +575,27 @@ func main() {
 }
 ```
 
+```bash
+$ go run app.go 
+⏳
+```
 
-### 🚧 TODO
+![](images/query-parameters.png)
 
-  - More client options: Python (requests) and Go
+```bash
+$ curl localhost:8000?name=Go
+Hello Go!
+```
 
-  - More server options: FastAPI & Flask
+### To go further
 
-  - Routing & Query Parameters
+  - Python client + server: requests + FastAPI & Flask
 
-  - mDNS ?
+  - Other network tools & protocols:
 
-  - "Prod:" Compile, 80 as default port, deploy, etc.
+    - mDNS / Zeroconf
 
-  - Concurrency: implicit ("hammer"/"DOS" the server) and implicit.
-
-  - Other protocols & associated go libs reference.
-    "Always bet on the web" mostly
-
-    - mDNS
-
-    - mqtt
+    - MQTT
 
     - sockets / websockets
 
